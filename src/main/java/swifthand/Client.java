@@ -162,6 +162,7 @@ class State {
         Stack<Integer> tmp = new Stack<Integer>();
         for (int i=1; i<=maxLength; i++) {
             tmp.clear();
+            tmp.push(this.id);
             if (getSequence(0, i, tmp)) {
                 return tmp;
             }
@@ -180,6 +181,7 @@ class ModelBasedStrategy implements  Strategy {
     Stack<Integer> nextSeq = null;
     int index = -1;
     int lastTid;
+    final public static int MAX_SEQUENCE_LENGTH = 10;
 
     private HashMap<String, Integer> appStateToID = new HashMap<String, Integer>();
     private ArrayList<String> IDToAppState = new ArrayList<String>();
@@ -207,8 +209,8 @@ class ModelBasedStrategy implements  Strategy {
 
         if (root == null) {
             current = root = new State(id, nTransitions);
-            index = 1;
-            nextSeq = current.getNextSequence(10, null);
+            index = 2;
+            nextSeq = current.getNextSequence(MAX_SEQUENCE_LENGTH, null);
             System.out.println("Next sequence "+nextSeq);
             i = nextSeq.get(index-1);
         } else {
@@ -218,12 +220,11 @@ class ModelBasedStrategy implements  Strategy {
                     System.err.println("***********************************************************************************************************");
                     System.err.println("Failed to follow sequence = " + nextSeq + ", index = " + index + ", current = " + current.id + ", lastTid = " + lastTid);
                     System.err.println("***********************************************************************************************************");
-                    nextSeq = current.getNextSequence(10, nextSeq);
+                    nextSeq = current.getNextSequence(MAX_SEQUENCE_LENGTH, nextSeq);
                 } else {
-                    nextSeq = current.getNextSequence(10, null);
+                    nextSeq = current.getNextSequence(MAX_SEQUENCE_LENGTH, null);
                 }
-                index = 1;
-                System.out.println("Next sequence "+nextSeq);
+                index = 2;
                 i = nextSeq.get(index-1);
             } else {
                 index += 2;
@@ -231,9 +232,9 @@ class ModelBasedStrategy implements  Strategy {
             }
         }
         lastTid = i;
-        System.out.println("Picked i = "+i);
         State.print();
-        System.err.println("Sequence = " + nextSeq + ", index = " + index + ", current = " + current.id + ", lastTid = " + lastTid);
+        System.out.println("Picked i = "+i);
+        System.err.println("Sequence = " + nextSeq + ", index = " + index + ", current state = " + current.id + ", nextTid = " + lastTid);
         return elist.get(i);
     }
 
@@ -286,7 +287,7 @@ public class Client {
         out.println(event);
     }
 
-    public void randomTest(int N, String appName) throws IOException {
+    public void infiniteTest(int N, String appName) throws IOException {
         Socket kkSocket = new Socket(Constants.hostName, Constants.SERVERPORT);
         PrintWriter out = new PrintWriter(kkSocket.getOutputStream(), true);
         BufferedReader in = new BufferedReader(
@@ -294,7 +295,7 @@ public class Client {
 
         int iter = 0;
         String currentPackageName = null;
-        for (int i=0; ; i++) {
+        for (int i=0; i<N; i++) {
             Pair data = getDataFromDevice(in);
             if (data.appPackageName == null || data.elist.isEmpty()) {
                 break;
@@ -320,7 +321,7 @@ public class Client {
 
     public static void main(String[] args) throws IOException {
         Client c = new Client();
-        c.randomTest(100, "Settings");
+        c.infiniteTest(Integer.MAX_VALUE, "Settings");
     }
 
 }
