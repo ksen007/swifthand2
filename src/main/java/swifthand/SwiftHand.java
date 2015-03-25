@@ -40,7 +40,7 @@ class ActionPair {
 public class SwiftHand extends UiAutomatorTestCase {
     private String currentAppPackageName = null;
     private Random rand = new Random();
-    final public static int TIMEOUT = 2000;
+    final public static int TIMEOUT = 10000;
 
     private ActionPair[] actions = new ActionPair[]{
             new ActionPair("back", new Action() {
@@ -206,6 +206,7 @@ public class SwiftHand extends UiAutomatorTestCase {
     private LinkedList getAbstractUIState() throws UiObjectNotFoundException {
         LinkedList sb = new LinkedList();
         int attempts = 1;
+        getUiDevice().waitForIdle(TIMEOUT);
 
         while(true) {
             try {
