@@ -41,6 +41,16 @@ public class SwiftHand extends UiAutomatorTestCase {
     private String currentAppPackageName = null;
     private Random rand = new Random();
     final public static int TIMEOUT = 10000;
+    final public static boolean INCLUDE_BOUNDS_IN_STATE = false;
+
+    private String getBounds(UiObject uiobj) throws UiObjectNotFoundException {
+        if (INCLUDE_BOUNDS_IN_STATE) {
+            return ":"+uiobj.getBounds().flattenToString();
+        } else {
+            return ":";
+        }
+    }
+
 
     private ActionPair[] actions = new ActionPair[]{
             new ActionPair("back", new Action() {
@@ -61,6 +71,14 @@ public class SwiftHand extends UiAutomatorTestCase {
 
     private void launchApp(String appName) throws UiObjectNotFoundException {
         getUiDevice().pressHome();
+        getUiDevice().waitForIdle(TIMEOUT);
+        LinkedList elist = getAbstractUIState();
+        if (elist.size()==3) { // looks like app crashed with a popup window
+            // 3 should be changed properly
+            triggerEvent((String)elist.get(2));
+            getUiDevice().pressHome();
+            getUiDevice().waitForIdle(TIMEOUT);
+        }
         UiObject allAppsButton = new UiObject(new UiSelector()
                 .description("Apps"));
         allAppsButton.clickAndWaitForNewWindow();
@@ -113,8 +131,7 @@ public class SwiftHand extends UiAutomatorTestCase {
                     + i
                     + ":"
                     + uiobj.getClassName()
-                    + ":"
-                    + uiobj.getBounds().flattenToString());
+                    + getBounds(uiobj));
         }
     }
 
@@ -134,8 +151,7 @@ public class SwiftHand extends UiAutomatorTestCase {
                     + i
                     + ":"
                     + uiobj.getClassName()
-                    + ":"
-                    + uiobj.getBounds().flattenToString());
+                    + getBounds(uiobj));
         }
 
     }
@@ -156,7 +172,7 @@ public class SwiftHand extends UiAutomatorTestCase {
                     + i
                     + ":"
                     + uiobj.getClassName()
-                    + ":" + uiobj.getBounds().flattenToString()
+                    + getBounds(uiobj)
                     + ":" + uiobj.isChecked());
         }
     }
@@ -177,8 +193,17 @@ public class SwiftHand extends UiAutomatorTestCase {
                     + i
                     + ":"
                     + uiobj.getClassName()
+                    + getBounds(uiobj)
                     + ":"
-                    + uiobj.getBounds().flattenToString());
+                    +0);
+            sb.addLast("scroll"
+                    + ":"
+                    + i
+                    + ":"
+                    + uiobj.getClassName()
+                    + getBounds(uiobj)
+                    + ":"
+                    +1);
         }
 
     }
@@ -194,8 +219,7 @@ public class SwiftHand extends UiAutomatorTestCase {
                     + i
                     + ":"
                     + uiobj.getClassName()
-                    + ":"
-                    + uiobj.getBounds().flattenToString()
+                    + getBounds(uiobj)
                     + ":"
                     + uiobj.getText());
         }
@@ -291,8 +315,9 @@ public class SwiftHand extends UiAutomatorTestCase {
 
     }
 
-    private void scrollAction(String instance) throws UiObjectNotFoundException {
+    private void scrollAction(String instance, String upOrDown) throws UiObjectNotFoundException {
         int i = Integer.parseInt(instance);
+        int ud = Integer.parseInt(upOrDown);
         UiScrollable uiobj = new UiScrollable(new UiSelector()
                 .classNameMatches(".*")
                 .scrollable(true)
@@ -302,7 +327,11 @@ public class SwiftHand extends UiAutomatorTestCase {
                 + uiobj.getClassName()
                 + " at "
                 + uiobj.getBounds().flattenToString());
-        uiobj.scrollForward();
+        if (ud == 0) {
+            uiobj.scrollForward();
+        } else {
+            uiobj.scrollBackward();
+        }
         getUiDevice().waitForIdle(TIMEOUT);
 
     }
@@ -324,7 +353,7 @@ public class SwiftHand extends UiAutomatorTestCase {
             } else if (components[0].equals("check")) {
                 checkAction(components[1]);
             } else if (components[0].equals("scroll")) {
-                scrollAction(components[1]);
+                scrollAction(components[1], components[4]);
             } else if (components[0].equals("launch")) {
                 launchApp(components[1]);
             }

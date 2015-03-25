@@ -110,14 +110,15 @@ class State {
             for(int l=0; l<nTransitions; l++) {
                 int j = randArr[l];
                 if (transitions[j] == null) {
-                    trace.push(j);
                     if (banned.contains(trace)) {
                         System.err.println("************************************************");
                         System.err.println("Avoiding sequence "+trace);
                         System.err.println("************************************************");
                         return false;
-                    } else
+                    } else {
+                        trace.push(j);
                         return true;
+                    }
                 } else {
                     int length = transitions[j].size();
                     if (length > 1) {
