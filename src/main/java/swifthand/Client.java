@@ -110,13 +110,14 @@ class State {
             for(int l=0; l<nTransitions; l++) {
                 int j = randArr[l];
                 if (transitions[j] == null) {
+                    trace.push(j);
                     if (banned.contains(trace)) {
                         System.err.println("************************************************");
                         System.err.println("Avoiding sequence "+trace);
                         System.err.println("************************************************");
+                        trace.pop();
                         return false;
                     } else {
-                        trace.push(j);
                         return true;
                     }
                 } else {
@@ -158,6 +159,7 @@ class State {
     public Stack<Integer> getNextSequence(int maxLength, Stack<Integer> bad) {
         if (bad != null) {
             banned.add(bad);
+            System.out.println("Banned "+banned);
         }
         Stack<Integer> tmp = new Stack<Integer>();
         for (int i=1; i<=maxLength; i++) {
@@ -233,7 +235,7 @@ class ModelBasedStrategy implements  Strategy {
         }
         lastTid = i;
         State.print();
-        System.out.println("Picked i = "+i);
+        System.out.println("Picked i = " + i);
         System.err.println("Sequence = " + nextSeq + ", index = " + index + ", current state = " + current.id + ", nextTid = " + lastTid);
         return elist.get(i);
     }
