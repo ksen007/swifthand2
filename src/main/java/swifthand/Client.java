@@ -322,8 +322,20 @@ public class Client {
     }
 
     public static void main(String[] args) throws IOException {
+
+        if (args.length != 1) {
+            System.out.println("arg error");
+            return;
+        }
+
+        final String launchMode = "gui"; // gui or am
+        String launchTarget = launchMode + ":" + args[0];
+
         Client c = new Client();
-        c.infiniteTest(Integer.MAX_VALUE, "Settings");
+        c.infiniteTest(100, launchTarget);
+
     }
+
+
 
 }

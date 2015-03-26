@@ -69,9 +69,8 @@ public class SwiftHand extends UiAutomatorTestCase {
             })
     };
 
-    private void launchApp(String appName) throws UiObjectNotFoundException {
-        getUiDevice().pressHome();
-        getUiDevice().waitForIdle(TIMEOUT);
+    private void handle_crash() throws UiObjectNotFoundException {
+
         LinkedList elist = getAbstractUIState();
         if (elist.size()==3) { // looks like app crashed with a popup window
             // 3 should be changed properly
@@ -79,6 +78,16 @@ public class SwiftHand extends UiAutomatorTestCase {
             getUiDevice().pressHome();
             getUiDevice().waitForIdle(TIMEOUT);
         }
+
+    }
+
+    // gui-based launch using app name in launcher
+    private void launchApp(String appName) throws UiObjectNotFoundException {
+        getUiDevice().pressHome();
+        getUiDevice().waitForIdle(TIMEOUT);
+
+        handle_crash();
+
         UiObject allAppsButton = new UiObject(new UiSelector()
                 .description("Apps"));
         allAppsButton.clickAndWaitForNewWindow();
@@ -94,6 +103,25 @@ public class SwiftHand extends UiAutomatorTestCase {
         settingsApp.clickAndWaitForNewWindow();
         getUiDevice().waitForIdle(TIMEOUT);
     }
+
+    // intent-based launch using am command with activity name
+    private void launchApp_am(String activityName) throws UiObjectNotFoundException  {
+        getUiDevice().pressHome();
+        getUiDevice().waitForIdle(TIMEOUT);
+
+        handle_crash();
+
+        //activityName = "com.android.settings/.Settings";
+        try {
+            String cmd = "am start -W -n " + activityName;
+            Runtime.getRuntime().exec(cmd);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        getUiDevice().waitForIdle(TIMEOUT);
+    }
+
 
     private String getCurrentAppPackageName() throws UiObjectNotFoundException {
         UiObject root = new UiObject(new UiSelector().index(0));
@@ -355,7 +383,13 @@ public class SwiftHand extends UiAutomatorTestCase {
             } else if (components[0].equals("scroll")) {
                 scrollAction(components[1], components[4]);
             } else if (components[0].equals("launch")) {
-                launchApp(components[1]);
+                if (components[1].equals("gui")){
+                    launchApp(components[2]);
+                } else if (components[1].equals("am")) {
+                    launchApp_am(components[2]);
+                } else {
+                    System.err.println("error: undefined launch mode");
+                }
             }
         } catch (Exception e) {
             System.err.println("-----------------------");
