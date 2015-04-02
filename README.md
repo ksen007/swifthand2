@@ -6,6 +6,6 @@ make sure a device is connected via USB and adb can communicate with it.
     ~/gradle-2.3/bin/gradle build
     ~/Library/Android/sdk/platform-tools/adb push dist/swifthand2.jar /data/local/tmp/
     ~/Library/Android/sdk/platform-tools/adb shell uiautomator runtest swifthand2.jar -c swifthand.SwiftHand &
-    javac src/main/java/swifthand/Client.java src/main/java/swifthand/Constants.java 
-    java -cp src/main/java/ swifthand.Client
+    javac src/main/java/swifthand/Client.java src/main/java/swifthand/Constants.java src/main/java/swifthand/PTANode.java 
+    java -cp src/main/java/ swifthand.Client Settings
 

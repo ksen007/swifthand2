@@ -24,7 +24,8 @@ class State {
     LinkedHashSet<State> transitions[];
     private static ArrayList<State> states = new ArrayList<State>();
     private static Random rand = new Random();
-    private static HashSet<Stack<Integer>> banned = new HashSet<Stack<Integer>>();
+    private static PTANode banned = new PTANode();
+//    private static HashSet<Stack<Integer>> banned = new HashSet<Stack<Integer>>();
 
     State(int id, int nTransitions) {
         this.id = id;
@@ -111,7 +112,7 @@ class State {
                 int j = randArr[l];
                 if (transitions[j] == null) {
                     trace.push(j);
-                    if (banned.contains(trace)) {
+                    if (banned.hasPrefix(trace)) {
                         System.err.println("************************************************");
                         System.err.println("Avoiding sequence "+trace);
                         System.err.println("************************************************");
@@ -158,8 +159,8 @@ class State {
 
     public Stack<Integer> getNextSequence(int maxLength, Stack<Integer> bad) {
         if (bad != null) {
-            banned.add(bad);
-            System.out.println("Banned "+banned);
+            banned.addTrace(bad);
+            banned.print();
         }
         Stack<Integer> tmp = new Stack<Integer>();
         for (int i=1; i<=maxLength; i++) {
