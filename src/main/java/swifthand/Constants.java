@@ -5,6 +5,7 @@ package swifthand;
  */
 public class Constants {
     final public static int SERVERPORT = 9090;
+    final public static int CLOSE_APP_AFTER = 200;
     final public static String hostName = "127.0.0.1";
 
 }

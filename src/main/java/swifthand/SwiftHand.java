@@ -3,6 +3,7 @@ package swifthand;
 // Import the uiautomator libraries
 
 import android.os.Message;
+import android.os.RemoteException;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.android.uiautomator.core.UiCollection;
@@ -47,7 +48,7 @@ public class SwiftHand extends UiAutomatorTestCase {
 
     private String getBounds(UiObject uiobj) throws UiObjectNotFoundException {
         if (INCLUDE_BOUNDS_IN_STATE) {
-            return ":"+uiobj.getBounds().flattenToString();
+            return ":" + uiobj.getBounds().flattenToString();
         } else {
             return ":";
         }
@@ -74,12 +75,38 @@ public class SwiftHand extends UiAutomatorTestCase {
     private void handle_crash() throws UiObjectNotFoundException {
 
         LinkedList elist = getAbstractUIState();
-        if (elist.size()==3) { // looks like app crashed with a popup window
+        if (elist.size() == 3) { // looks like app crashed with a popup window
             // 3 should be changed properly
-            triggerEvent((String)elist.get(2));
+            triggerEvent((String) elist.get(2));
             getUiDevice().pressHome();
             getUiDevice().waitForIdle(TIMEOUT);
         }
+
+    }
+
+    private void closeApp() throws UiObjectNotFoundException, RemoteException {
+        getUiDevice().pressRecentApps();
+        getUiDevice().waitForIdle(TIMEOUT);
+        getUiDevice().waitForIdle(TIMEOUT);
+        UiCollection root = new UiCollection(new UiSelector().index(0));
+        int count = 0;
+
+        while (count == 0) {
+            count = root.getChildCount(new UiSelector()
+                    .resourceId("com.android.systemui:id/task_view_bar"));
+            getUiDevice().waitForIdle(TIMEOUT);
+        }
+        UiObject uiobj = null;
+        uiobj = new UiObject(new UiSelector()
+                .resourceId("com.android.systemui:id/task_view_bar")
+                .instance(0));
+        String cname = uiobj.getClassName();
+        System.out.println("Closing frame of type  "
+                + cname
+                + " at "
+                + uiobj.getBounds().flattenToString());
+        uiobj.swipeRight(100);
+        getUiDevice().waitForIdle(TIMEOUT);
 
     }
 
@@ -107,7 +134,7 @@ public class SwiftHand extends UiAutomatorTestCase {
     }
 
     // intent-based launch using am command with activity name
-    private void launchApp_am(String activityName) throws UiObjectNotFoundException  {
+    private void launchApp_am(String activityName) throws UiObjectNotFoundException {
         getUiDevice().pressHome();
         getUiDevice().waitForIdle(TIMEOUT);
 
@@ -225,7 +252,7 @@ public class SwiftHand extends UiAutomatorTestCase {
                     + uiobj.getClassName()
                     + getBounds(uiobj)
                     + ":"
-                    +0);
+                    + 0);
             sb.addLast("scroll"
                     + ":"
                     + i
@@ -233,7 +260,7 @@ public class SwiftHand extends UiAutomatorTestCase {
                     + uiobj.getClassName()
                     + getBounds(uiobj)
                     + ":"
-                    +1);
+                    + 1);
         }
 
     }
@@ -260,9 +287,10 @@ public class SwiftHand extends UiAutomatorTestCase {
     private LinkedList getAbstractUIState() throws UiObjectNotFoundException {
         LinkedList sb = new LinkedList();
         int attempts = 1;
+        sleep(200);
         getUiDevice().waitForIdle(TIMEOUT);
 
-        while(true) {
+        while (true) {
             try {
                 UiCollection root = new UiCollection(new UiSelector().index(0));
 
@@ -284,8 +312,8 @@ public class SwiftHand extends UiAutomatorTestCase {
                 attempts++;
                 sb.clear();
                 System.err.println("-----------------------");
-                if (attempts>2) {
-                    System.err.println("Needs attention !!!!!!!!!");
+                if (attempts > 2) {
+                    System.err.println("!!!!!!!!!!!!! Needs attention !!!!!!!!!");
                     e.printStackTrace();
                 }
                 System.err.println("----------------------- Trying to retrieve UI State again: attempt number " + attempts);
@@ -385,13 +413,16 @@ public class SwiftHand extends UiAutomatorTestCase {
             } else if (components[0].equals("scroll")) {
                 scrollAction(components[1], components[4]);
             } else if (components[0].equals("launch")) {
-                if (components[1].equals("gui")){
+//                closeApp();
+                if (components[1].equals("gui")) {
                     launchApp(components[2]);
                 } else if (components[1].equals("am")) {
                     launchApp_am(components[2]);
                 } else {
                     System.err.println("error: undefined launch mode");
                 }
+            } else if (components[0].equals("closeapp")) {
+                closeApp();
             }
         } catch (Exception e) {
             System.err.println("-----------------------");
@@ -434,7 +465,7 @@ public class SwiftHand extends UiAutomatorTestCase {
                     new InputStreamReader(clientSocket.getInputStream()));
 
 
-            while(true) {
+            while (true) {
                 // each iteration represents an event from the client
 
                 // ui state

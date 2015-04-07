@@ -304,6 +304,7 @@ public class Client {
                 break;
             }
 
+            System.out.println("iter = " + iter);
             if (iter == 0) {
                 iter++;
                 sendEvent(out, "launch:"+appName);
@@ -313,9 +314,15 @@ public class Client {
                 String event = strategy.getNextEvent(data.elist);
                 sendEvent(out, event);
             } else if (data.appPackageName.equals(currentPackageName)) {
-                String event = strategy.getNextEvent(data.elist);
-                sendEvent(out, event);
+                iter++;
+                if (iter % Constants.CLOSE_APP_AFTER == 0) {
+                    sendEvent(out, "closeapp:"+appName);
+                } else {
+                    String event = strategy.getNextEvent(data.elist);
+                    sendEvent(out, event);
+                }
             } else {
+                iter++;
                 sendEvent(out, "launch:"+appName);
             }
         }
@@ -333,7 +340,7 @@ public class Client {
         String launchTarget = launchMode + ":" + args[0];
 
         Client c = new Client();
-        c.infiniteTest(100, launchTarget);
+        c.infiniteTest(Integer.MAX_VALUE, launchTarget);
 
     }
 
