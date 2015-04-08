@@ -75,6 +75,7 @@ public class SwiftHand extends UiAutomatorTestCase {
     private void handle_crash() throws UiObjectNotFoundException {
 
         LinkedList elist = getAbstractUIState();
+        //System.out.println("elist = " + elist);
         if (elist.size() == 3) { // looks like app crashed with a popup window
             // 3 should be changed properly
             triggerEvent((String) elist.get(2));

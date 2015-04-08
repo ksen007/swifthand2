@@ -215,7 +215,6 @@ class ModelBasedStrategy implements  Strategy {
             index = 2;
             nextSeq = current.getNextSequence(MAX_SEQUENCE_LENGTH, null);
             System.out.println("Next sequence "+nextSeq);
-            i = nextSeq.get(index-1);
         } else {
             current = current.addTransition(lastTid, id, nTransitions);
             if (index == -1 || index == nextSeq.size() || nextSeq.get(index) != current.id) {
@@ -228,14 +227,17 @@ class ModelBasedStrategy implements  Strategy {
                     nextSeq = current.getNextSequence(MAX_SEQUENCE_LENGTH, null);
                 }
                 index = 2;
-                i = nextSeq.get(index-1);
             } else {
                 index += 2;
-                i = nextSeq.get(index-1);
             }
         }
-        lastTid = i;
         State.print();
+        if (nextSeq == null) {
+            System.out.println("Model exploration finished.  All states have been explored.");
+            return null;
+        }
+        i = nextSeq.get(index-1);
+        lastTid = i;
         System.out.println("Picked i = " + i);
         System.err.println("Sequence = " + nextSeq + ", index = " + index + ", current state = " + current.id + ", nextTid = " + lastTid);
         return elist.get(i);
@@ -312,6 +314,7 @@ public class Client {
                 iter++;
                 currentPackageName = data.appPackageName;
                 String event = strategy.getNextEvent(data.elist);
+                if (event == null) break;
                 sendEvent(out, event);
             } else if (data.appPackageName.equals(currentPackageName)) {
                 iter++;
@@ -319,6 +322,7 @@ public class Client {
                     sendEvent(out, "closeapp:"+appName);
                 } else {
                     String event = strategy.getNextEvent(data.elist);
+                    if (event == null) break;
                     sendEvent(out, event);
                 }
             } else {
