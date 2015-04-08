@@ -175,7 +175,7 @@ class State {
 }
 
 interface Strategy {
-    public String getNextEvent(LinkedList<String> elist);
+    public String getNextEvent(LinkedList<String> elist, boolean failed);
 }
 
 class ModelBasedStrategy implements  Strategy {
@@ -205,7 +205,7 @@ class ModelBasedStrategy implements  Strategy {
         return id;
     }
 
-    public String getNextEvent(LinkedList<String> elist) {
+    public String getNextEvent(LinkedList<String> elist, boolean failed) {
         int id = getUniqueAppStateID(elist);
         int nTransitions = elist.size();
         int i;
@@ -217,8 +217,8 @@ class ModelBasedStrategy implements  Strategy {
             System.out.println("Next sequence "+nextSeq);
         } else {
             current = current.addTransition(lastTid, id, nTransitions);
-            if (index == -1 || index == nextSeq.size() || nextSeq.get(index) != current.id) {
-                if (index != -1 && index < nextSeq.size() && nextSeq.get(index) != current.id) {
+            if (index == -1 || index == nextSeq.size() || nextSeq.get(index) != current.id || failed) {
+                if (index != -1 && index < nextSeq.size() && nextSeq.get(index) != current.id || failed) {
                     System.err.println("***********************************************************************************************************");
                     System.err.println("Failed to follow sequence = " + nextSeq + ", index = " + index + ", current = " + current.id + ", lastTid = " + lastTid);
                     System.err.println("***********************************************************************************************************");
@@ -253,7 +253,7 @@ class RandomStrategy implements Strategy {
     private static Random rand = new Random(100);
 
 
-    public String getNextEvent(LinkedList elist) {
+    public String getNextEvent(LinkedList elist, boolean failed) {
         String evt;
         int i = rand.nextInt(elist.size());
         while ((evt = (String) elist.get(i)).startsWith("text")) {
@@ -299,6 +299,7 @@ public class Client {
                 new InputStreamReader(kkSocket.getInputStream()));
 
         int iter = 0;
+        boolean failedSeq = false;
         String currentPackageName = null;
         for (int i=0; i<N; i++) {
             Pair data = getDataFromDevice(in);
@@ -313,21 +314,24 @@ public class Client {
             } else if (iter == 1) {
                 iter++;
                 currentPackageName = data.appPackageName;
-                String event = strategy.getNextEvent(data.elist);
+                String event = strategy.getNextEvent(data.elist, failedSeq);
                 if (event == null) break;
                 sendEvent(out, event);
+                failedSeq = false;
             } else if (data.appPackageName.equals(currentPackageName)) {
                 iter++;
                 if (iter % Constants.CLOSE_APP_AFTER == 0) {
                     sendEvent(out, "closeapp:"+appName);
                 } else {
-                    String event = strategy.getNextEvent(data.elist);
+                    String event = strategy.getNextEvent(data.elist, failedSeq);
                     if (event == null) break;
                     sendEvent(out, event);
                 }
+                failedSeq = false;
             } else {
                 iter++;
                 sendEvent(out, "launch:"+appName);
+                failedSeq = true;
             }
         }
         sendEvent(out, "end");
