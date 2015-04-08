@@ -72,16 +72,50 @@ public class SwiftHand extends UiAutomatorTestCase {
             })
     };
 
-    private void handle_crash() throws UiObjectNotFoundException {
 
-        LinkedList elist = getAbstractUIState();
-        //System.out.println("elist = " + elist);
-        if (elist.size() == 3) { // looks like app crashed with a popup window
-            // 3 should be changed properly
-            triggerEvent((String) elist.get(2));
-            getUiDevice().pressHome();
-            getUiDevice().waitForIdle(TIMEOUT);
+    private void printTextWidgets(UiCollection root) throws UiObjectNotFoundException {
+        int count = root.getChildCount(new UiSelector()
+                .textMatches(".+"));
+        for (int i = 0; i < count; i++) {
+            UiObject uiobj = new UiObject(new UiSelector()
+                    .textMatches(".+")
+                    .instance(i));
+            System.out.println("text:"
+                    + i
+                    + ":"
+                    + uiobj.getClassName()
+                    + getBounds(uiobj)
+                    + ":"
+                    + uiobj.getText());
         }
+    }
+
+    boolean clickButton(String description) throws UiObjectNotFoundException {
+        UiCollection root = new UiCollection(new UiSelector().index(0));
+        int count;
+
+        count = root.getChildCount(new UiSelector().className("android.widget.Button").text(description));
+        if (count>0) {
+            UiObject uiobj;
+            uiobj = new UiObject(new UiSelector().className("android.widget.Button").text(description));
+            uiobj.click();
+            return true;
+        }
+        return false;
+    }
+
+    private void handle_crash() throws UiObjectNotFoundException {
+        if (clickButton("OK")) return;
+        if (clickButton("Cancel")) return;
+
+//        LinkedList elist = getAbstractUIState();
+//        System.out.println("elist = " + elist);
+//        if (elist.size() == 3) { // looks like app crashed with a popup window
+//            // 3 should be changed properly
+//            triggerEvent((String) elist.get(2));
+//            getUiDevice().pressHome();
+//            getUiDevice().waitForIdle(TIMEOUT);
+//        }
 
     }
 
@@ -426,7 +460,7 @@ public class SwiftHand extends UiAutomatorTestCase {
                 closeApp();
             }
         } catch (Exception e) {
-            System.err.println("-----------------------");
+            System.err.println("----------- Ignore the following exception! ------------");
             e.printStackTrace();
             System.err.println(getAbstractUIState());
             System.err.println("-----------------------");
